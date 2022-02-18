@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <section ref="box">这是一个消息：{{ msg }}</section>
+        <section ref="test">这是created消息：{{ test }}</section>
+        <button @click="handleClick">按钮点击</button>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data(){
+                return {
+                    msg: 1,
+                    test: '123',
+                    arr: []
+                }
+            },
+            created(){
+                this.$nextTick(() => {
+                    console.log(`created中nextTick触发了：${this.$refs.box.innerHTML}`)
+                })
+            },
+            mounted(){
+                console.log('mounted 钩子执行了')
+            },
+            updated(){
+                console.log('updated 钩子执行了')
+            },
+            methods: {
+                handleClick(){
+                    this.msg += 1
+                    this.$nextTick(() => {
+                        console.log(`点击事件的nextTick触发了：${this.$refs.box.innerHTML}`)
+
+                    })
+
+                }
+            },
+        })
+
+    </script>
+</body>
+</html>
