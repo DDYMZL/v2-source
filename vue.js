@@ -1899,6 +1899,7 @@
   ) {
     var res;
     try {
+      // 执行生命周期函数
       res = args ? handler.apply(context, args) : handler.call(context);
       if (res && !res._isVue && isPromise(res) && !res._handled) {
         res.catch(function (e) { return handleError(e, vm, info + " (Promise/async)"); });
