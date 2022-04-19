@@ -1567,6 +1567,7 @@
     // but only if it is a raw options object that isn't
     // the result of another mergeOptions call.
     // Only merged options has the _base property.
+    // 递归合并
     if (!child._base) {
       if (child.extends) {
         parent = mergeOptions(parent, child.extends, vm);
@@ -1584,6 +1585,7 @@
       mergeField(key);
     }
     for (key in child) {
+      // 如果父组件不存在这个属性，则合并。如果父子组件拥有同一个属性，则使用子组件的值，这一步在上一个遍历中已经处理
       if (!hasOwn(parent, key)) {
         mergeField(key);
       }
@@ -2470,6 +2472,7 @@
     if (inject) {
       // inject is :any because flow is not smart enough to figure out cached
       var result = Object.create(null);
+      // 找到inject所有的key
       var keys = hasSymbol
         ? Reflect.ownKeys(inject)
         : Object.keys(inject);
@@ -2478,15 +2481,18 @@
         var key = keys[i];
         // #6574 in case the inject object is observed...
         if (key === '__ob__') { continue }
+        // 拿到inject对应provide的key
         var provideKey = inject[key].from;
         var source = vm;
         while (source) {
+          // 一层层遍历，直到找到provide对应的key
           if (source._provided && hasOwn(source._provided, provideKey)) {
             result[key] = source._provided[provideKey];
             break
           }
           source = source.$parent;
         }
+        // 如果没有找到，设置为default，如果default没有，就提示不存在
         if (!source) {
           if ('default' in inject[key]) {
             var provideDefault = inject[key].default;
@@ -4658,6 +4664,7 @@
     var opts = vm.$options;
     if (opts.props) { initProps(vm, opts.props); }
     if (opts.methods) { initMethods(vm, opts.methods); }
+    // 初始化data
     if (opts.data) {
       initData(vm);
     } else {
@@ -4877,6 +4884,7 @@
   function initMethods (vm, methods) {
     var props = vm.$options.props;
     for (var key in methods) {
+      // 判断methods中的key是否与实例中的key相同
       {
         if (typeof methods[key] !== 'function') {
           warn(
@@ -5002,12 +5010,15 @@
       // a flag to avoid this being observed
       vm._isVue = true;
       // merge options
+      // 根据_isComponent判断是否为子组件
       if (options && options._isComponent) {
         // optimize internal component instantiation
         // since dynamic options merging is pretty slow, and none of the
         // internal component options needs special treatment.
+        // 子组件会进入这个if判断，
         initInternalComponent(vm, options);
       } else {
+        // 将全局配置合并到根组件局部配置上
         vm.$options = mergeOptions(
           resolveConstructorOptions(vm.constructor),
           options || {},
@@ -5020,12 +5031,17 @@
       }
       // expose real self
       vm._self = vm;
+      // 组件关系属性的初始化 $mount  $children等
       initLifecycle(vm);
+      // 初始化自定义事件 
       initEvents(vm);
+      // 初始化插槽
       initRender(vm);
       callHook(vm, 'beforeCreate');
+      // 初始化inject
       initInjections(vm); // resolve injections before data/props
       initState(vm);
+      // 初始化provide
       initProvide(vm); // resolve provide after data/props
       callHook(vm, 'created');
 
@@ -5041,7 +5057,8 @@
       }
     };
   }
-
+  
+  // 打平配置对象上的属性，赋值到当前实例上的$options上，减少原型链的查找，优化查找性能
   function initInternalComponent (vm, options) {
     var opts = vm.$options = Object.create(vm.constructor.options);
     // doing this because it's faster than dynamic enumeration.
@@ -5055,25 +5072,31 @@
     opts._renderChildren = vnodeComponentOptions.children;
     opts._componentTag = vnodeComponentOptions.tag;
 
+    // 如果存在render函数，赋值到当前实例上的$options上
     if (options.render) {
       opts.render = options.render;
       opts.staticRenderFns = options.staticRenderFns;
     }
   }
-
+  // 获取配置项
   function resolveConstructorOptions (Ctor) {
+    // 从实例构造函数上获取到选项
     var options = Ctor.options;
+    // 如果存在基类
     if (Ctor.super) {
       var superOptions = resolveConstructorOptions(Ctor.super);
       var cachedSuperOptions = Ctor.superOptions;
+      // 如果基类选项和缓存中的选项不一致，证明选项发生了变化
       if (superOptions !== cachedSuperOptions) {
         // super option changed,
         // need to resolve new options.
         Ctor.superOptions = superOptions;
         // check if there are any late-modified/attached options (#4976)
+        // 找到变化的选项
         var modifiedOptions = resolveModifiedOptions(Ctor);
         // update base extend options
         if (modifiedOptions) {
+          // 将更改的选项和extendOptions进行合并
           extend(Ctor.extendOptions, modifiedOptions);
         }
         options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions);
@@ -5103,6 +5126,7 @@
     ) {
       warn('Vue is a constructor and should be called with the `new` keyword');
     }
+    // initMixin定义了_init方法
     this._init(options);
   }
 
