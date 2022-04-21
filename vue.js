@@ -4765,6 +4765,7 @@
           vm
         );
       } else if (!isReserved(key)) {
+        // 把data上的属性代理到实例上
         proxy(vm, "_data", key);
       }
     }

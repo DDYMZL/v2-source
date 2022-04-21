@@ -11,17 +11,20 @@
         <section ref="box">这是一个消息：{{ msg }}</section>
         <section ref="test">这是created消息：{{ test }}</section>
         <button @click="handleClick">按钮点击</button>
-        <comp></comp>
+        <!-- <comp></comp> -->
 
     </div>
     <script src="./vue.js"></script>
     <script>
-        Vue.component('comp', {
-            template: '<div>123</div>'
-        })
+        // Vue.component('comp', {
+        //     template: '<div>123</div>'
+        // })
         new Vue({
             el: '#app',
             name: 'App',
+            props: {
+                a: String
+            },
             data(){
                 return {
                     msg: 1,
@@ -31,6 +34,11 @@
                         a: 1,
                         b: 2
                     }
+                }
+            },
+            computed: {
+                aaa(){
+                    return this.msg
                 }
             },
             created(){
